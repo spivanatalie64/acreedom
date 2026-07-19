@@ -3,7 +3,7 @@ name: Latest Release
 on:
   push:
     branches:
-      - master 
+      - main
 
   workflow_dispatch:
 
@@ -15,7 +15,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v6
         with:
-          ref: master
+          ref: main
 
       - name: Fetch latest tag
         id: version
@@ -57,7 +57,7 @@ jobs:
             const version = `${{ steps.version.outputs.VERSION }}`;
             const changelog = `${{ steps.changelog.outputs.CHANGELOG }}`;
             const release = await github.rest.repos.createRelease({
-              target_commitish: "master",
+              target_commitish: "main",
               owner: context.repo.owner,
               repo: context.repo.repo,
               tag_name: version,

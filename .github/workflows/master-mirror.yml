@@ -11,13 +11,13 @@ jobs:
     steps:
       - uses: actions/checkout@v6
         with:
-          ref: master
+          ref: main
       - name: Update mirror
         run: |
           git remote add upstream https://git.savannah.gnu.org/git/gnuzilla.git
           git fetch --tags upstream
           git pull upstream master
-          git push --tags --set-upstream origin master
+          git push --tags --set-upstream origin main
           gh workflow run release.yml --ref main
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
