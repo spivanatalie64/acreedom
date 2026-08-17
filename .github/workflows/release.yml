@@ -1,0 +1,71 @@
+name: Latest Release
+
+on:
+  push:
+    branches:
+      - main
+
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Fetch latest tag
+        id: version
+        run: |
+          git fetch --tags
+          VERSION=$(git describe --tags --abbrev=0)
+          echo "Found tag $VERSION from git"
+          echo "VERSION=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Check for existing release
+        id: check
+        run: |
+          if gh release view "${{ steps.version.outputs.VERSION }}" --json createdAt --jq '.[]'; then
+            echo "Release found, aborting"
+            echo "RELEASE_FOUND=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "RELEASE_FOUND=false" >> "$GITHUB_OUTPUT"
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract CHANGELOG entry from git
+        id: changelog
+        if: always() && steps.check.outputs.RELEASE_FOUND == 'false'
+        run: |
+          CHANGELOG=$(git show --abbrev-commit --no-patch ${{ steps.version.outputs.VERSION }} | sed '/-\+BEGIN\s\+PGP\s\+SIGNATURE-\+/,/-\+END\s\+PGP\s\+SIGNATURE-\+/d')
+          echo "Extracted changelog from git:"
+          echo -e "$CHANGELOG"
+          echo 'CHANGELOG<<EOF' >> "$GITHUB_OUTPUT"
+          echo -e "$CHANGELOG" >> "$GITHUB_OUTPUT"
+          echo 'EOF' >> "$GITHUB_OUTPUT"
+
+      - name: Create GitHub release
+        if: always() && steps.check.outputs.RELEASE_FOUND == 'false'
+        uses: actions/github-script@v8
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const version = `${{ steps.version.outputs.VERSION }}`;
+            const changelog = `${{ steps.changelog.outputs.CHANGELOG }}`;
+            const release = await github.rest.repos.createRelease({
+              target_commitish: "main",
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              tag_name: version,
+              name: `Release for ${version}`,
+              body: changelog,
+            })
+            console.log(`New release created ${release.data.html_url}`)
