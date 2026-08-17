@@ -1,0 +1,29 @@
+name: Master-Mirror
+
+on:
+  schedule:
+    - cron: '33 3,15 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: write
+
+jobs:
+  mirror_update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: main
+      - name: Update mirror
+        run: |
+          git remote add upstream https://git.savannah.gnu.org/git/gnuzilla.git
+          git fetch --tags upstream
+          git config user.email "actions@github.com"
+          git config user.name "GitHub Actions"
+          git pull --rebase upstream master
+          git push --force-with-lease --tags --set-upstream origin main
+          gh workflow run release.yml --ref main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
