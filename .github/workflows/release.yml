@@ -17,13 +17,14 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 360
     env:
-      MOZBUILD_STATE_PATH: ${{ runner.temp }}/mozbuild
-      MOZ_NOSPAM: 1
+      MOZ_NOSPAM: '1'
       GH_TOKEN: ${{ github.token }}
     steps:
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
+      - name: Configure build environment
+        run: echo "MOZBUILD_STATE_PATH=$RUNNER_TEMP/mozbuild" >> "$GITHUB_ENV"
       - name: Install source preparation dependencies
         run: |
           sudo apt-get update
