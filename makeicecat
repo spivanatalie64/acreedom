@@ -663,6 +663,7 @@ s/icecat\\.com\\>/firefox.com/g;
 s/IceCat-Spdy/Firefox-Spdy/g;
 s/icecat-accounts/firefox-accounts/g;
 s/IceCatAccounts/FirefoxAccounts/g;
+s/icecat-ci-tc\.services\.mozilla\.com/firefox-ci-tc.services.mozilla.com/g;
 s|https://www\\.mozilla\\.org/icecat/?utm_source=synceol|https://www.mozilla.org/firefox/?utm_source=synceol|g;
 
 s|www\\.gnu\\.org/software/gnuzilla/icecat-help|libreplanet.org/wiki/Group:IceCat/Help|g;
