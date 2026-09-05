@@ -7,7 +7,7 @@ sources = [p for p in Path("output").glob("icecat-*") if p.is_dir()]
 if len(sources) != 1:
     raise SystemExit(f"Expected one prepared source directory, found {sources}")
 source = sources[0]
-branding = source / "browser/branding/icecat"
+branding = source / "browser/branding/official"
 config = branding / "configure.sh"
 text = config.read_text()
 assert "MOZ_APP_DISPLAYNAME=IceCat" in text
