@@ -31,7 +31,6 @@ readonly SOURCEBALL_SIGNINGKEY='14F26682D0916CDD81E37B6D61B7B526D98F0353'
 readonly FFVERSION=${FFMAJOR}.${FFMINOR}.${FFSUB}
 readonly SOURCEBALL=firefox-${FFVERSION}esr.source.tar.xz
 readonly SOURCEBALL_URL=https://ftp.mozilla.org/pub/firefox/candidates/${FFVERSION}esr-candidates/build${FFBUILD}/source/${SOURCEBALL}
-readonly KEYSERVER=keyserver.ubuntu.com
 
 # branding
 readonly INFO_URL=www.gnu.org/software/gnuzilla/
@@ -301,7 +300,12 @@ fetch_source()
 verify_sources()
 {
     echo Verifying Firefox tarball
-    gpg --recv-keys --keyserver keyserver.ubuntu.com ${SOURCEBALL_SIGNINGKEY}
+    local mozilla_key_url="https://ftp.mozilla.org/pub/firefox/releases/${FFVERSION}esr/KEY"
+    local mozilla_key_bundle="/tmp/acreedom-mozilla-keys"
+    mkdir -p "$mozilla_key_bundle"
+    wget -N "$mozilla_key_url" -O "$mozilla_key_bundle/Mozilla.KEY"
+    gpg --show-keys --with-colons "$mozilla_key_bundle/Mozilla.KEY" | awk -F: '/^fpr:/ {print $10}' | grep -q "^${SOURCEBALL_SIGNINGKEY}$"
+    gpg --import "$mozilla_key_bundle/Mozilla.KEY"
     gpg --verify ${SOURCEBALL}.asc ${SOURCEBALL}
     echo -n ${SOURCEBALL_CHECKSUM} ${SOURCEBALL} | sha256sum -c -
 }
